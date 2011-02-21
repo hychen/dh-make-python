@@ -2,14 +2,14 @@
 ========================================
 dh-make-python
 ========================================
-To use git to manage debian package upstream and debian dir
 
-# creat a tmeplate of debianlize source in debian_branch (unstable default)
+Goal
+=====
 
-dh_make_python get - get source and unpack to current direcotry
-dh_make_python import - import source to git repo
-dh_make_python debianlize - create debian/ from metadata of python lib
-dh_make_python start - do debianlize of python lib
+- Try to find required metadata from python package
+  for creating a tmeplate of debianlize source in debian_branch
+- Import source code to git for managing upstream code and debianized code
+- Support download python package from PyPI
 
 please read help for more detail:
 
@@ -19,6 +19,12 @@ Depends
 =======
 
 Install python-ucltip
+
+PYPI
+
+1. download source code from http://pypi.python.org/pypi/ucltip/
+2. unpack tgz
+3. ./setup install
 
 Ubuntu Maverick
 
