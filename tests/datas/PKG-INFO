@@ -1,0 +1,23 @@
+Metadata-Version: 1.0
+Name: ucltip
+Version: 0.4.4
+Summary: A library to help making command line tool Python binding faster
+Home-page: http://github.com/hychen/ucltip
+Author: Hsin-Yi Chen (hychen)
+Author-email: ossug.hychen@gmail.com
+License: BSD-2-clause License
+Description:
+        This library makes you to use command line tool in Python by OO way.
+        The concept is to transform 1) command as a instance, 2) options
+        of command as arguments and keyword arguments of function or
+        instance method when method be used as a sub command of a command.
+
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2.5
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Topic :: Software Development :: Libraries :: Python Modules

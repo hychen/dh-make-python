@@ -1,0 +1,121 @@
+#!/usr/bin/env python
+import os
+import platform
+
+import ucltip
+
+from dh_make_python import admin
+from dh_make_python import metadata
+from dh_make_python import util
+
+class MyMgr(admin.Management):
+
+    def __init__(self):
+        super(MyMgr, self).__init__()
+        self.dist = platform.dist()
+        self.git = ucltip.CmdDispatcher('git')
+        self.debinfo = None
+        if os.getenv('DH_AUTODETECT') == '1':
+            self.dist = platform.dist()
+        else:
+            self.dist = ('debian','','unstable')
+        self.branch=util.debian_branch_name(self.dist)
+
+    def doStart(self, args):
+        """quick start to debianlize python lib"""
+        if args.pypi:
+            self.doGet(args)
+        self.doImport(args)
+        self.doDebianlize(args)
+        self.doImport(args)
+
+    def _setArgsStart(self):
+        self.parser_start.add_argument('-pypi', action='store_true', help='download source from pypi')
+        self.parser_start.add_argument('pkgname', type=str, help='python package name')
+
+    def doPull(self, args):
+        """pull new version codes"""
+        print "still in design"
+
+    def doGet(self, args):
+        """get python source"""
+        if os.listdir('.') != []:
+            print "current directory is not empty!"
+            exit()
+        from dh_make_python import downloader
+        pypi = downloader.PyPI()
+        print "searching %s in PyPI"%args.pkgname
+        ret = pypi.getDownloadUrl(args.pkgname)
+        if ret:
+            print "downloading %s "%ret[0]
+            tgz=pypi.download(*ret)
+            print "unpacking source"
+            util.unpack_tgz(tgz, '.')
+        else:
+            print "can not find in PyPI"
+
+    def _setArgsGet(self):
+        self.parser_get.add_argument('pkgname', type=str, help='python package name')
+
+    def doImport(self, args):
+        """import source to git repo"""
+        if os.listdir('.') == []:
+           print "there is no any source here, try use --pypi to downlod source from PyPI"
+           exit()
+        self._load()
+        #@TODO apply patch of new version or clean it
+        if not os.path.isdir('.git'):
+            self.git.init()
+
+        if not os.path.isdir('debian'):
+            # import upstream
+            self._import(self.debinfo.upstream_name, 'v'+self.debinfo.upstream_version)
+        else:
+            # import debianlize
+            if self.branch != 'debian_unstable' and self.dist[0] == 'Ubuntu':
+                tag = '%s/%s' % (self.debinfo.debver,self.dist[2])
+            else:
+                tag = '%s' % self.debinfo.debver
+            print """please import debianized code with following commands after you modify:
+ git add .
+ git commit -m \'debianlized %s %s\'
+ git tag \'%s/%s\'"""%(self.debinfo.upstream_name, 'v'+self.debinfo.upstream_version,
+                                        self.dist[0].lower(), tag)
+#            self._import(self.debinfo.debname, self.debver, branch=util.debain_branch_name(self.dist))
+
+    def _import(self, srcname, tag, branch='master'):
+        try:
+            if branch != 'master':
+                self.git.checkout(branch)
+            self.git.add('.')
+            self.git.commit(m="Imported %s %s"%(srcname, tag))
+            self.git.tag(tag)
+        except ucltip.CommandExecutedFalur, e:
+            #@TODO: handle error:
+            print "not thing can be imported"
+        if tag not in self.git.tag().split('\n'):
+            self.git.tag(tag)
+
+    def doDebianlize(self, args):
+        # check upstream is imported
+        if not os.path.isdir('.git'):
+            print "please import upstream source first!"
+            exit()
+        # do debianlize
+        from dh_make_python import template
+        self._load()
+        if self.branch not in self.git.branch().split('\n'):
+            self.git.checkout('master', b=self.branch)
+        else:
+            self.checkout(self.branch)
+        print "creating debian/"
+        template.DebianizeDir(self.debinfo).save()
+
+    def _load(self):
+        if not self.debinfo:
+            self.debinfo = metadata.DebInfo(metadata.SrcInfo('.'))
+pass
+
+if __name__ == '__main__':
+    import sys
+    MyMgr().run(sys.argv[1:])
