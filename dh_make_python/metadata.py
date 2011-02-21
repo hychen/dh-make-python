@@ -176,7 +176,7 @@ class DebInfo(object):
         self.upstream_contact = self.srcinfo.author
         self.upstream_contact_email = self.srcinfo.author_email
         self.upstream_contact_fullname = self.srcinfo.author_fullname
-        self.maintainer = os.getenv('DEBEFULLNAME') or self.upstream_contact
+        self.maintainer = os.getenv('DEBFULLNAME') or self.upstream_contact
         self.maintainer_email = os.getenv('DEBEMAIL') or self.upstream_contact_email
         self.maintainer_fullname = util.contact_fullname(self.maintainer, self.maintainer_email)
 
